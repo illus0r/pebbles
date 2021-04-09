@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "d3": "^6.6.2",
+    "svg-catmull-rom-spline": "0.0.1"
+  }
+}
