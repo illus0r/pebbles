@@ -1,11 +1,27 @@
-const d3 = require('d3')
-const Matter = require('matter-js')
-require("pathseg")
-console.log(Matter)
+/*
 
-import pointsToSplinePath from "./pointsToSplinePath.js"
+- самому рендерить на СВГ
+- градиенты камушкам рандомные
+- гранолой раскидать
+- запаковка на хик
 
-let pebble
+- строить пирамидки из них, заблокировать перемещение по оси у
+- раскраска прикольная
+- разнообразить форму
+- СВГ маски для каких-нибудь эффектов.
+- СВГ фильтры для зергистой поверхности и псевдообъёма
+- разобраться, почему из СВГ можно элемент парсить, а из памяти —  нет.
+
+*/
+
+
+import "pathseg"
+import * as d3 from "d3"
+import * as Matter from "matter-js"
+
+import {pointsToSplinePath} from "./pointsToSplinePath.js"
+import {Pebble, Box} from "./pebble.js"
+
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log('hey')
@@ -13,27 +29,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const svg = d3.select('svg')
     const points = [[100, 100], [200, 200], [100, 200]]
 
-    function draw() {
-        svg.selectAll('path').remove()
+    function frame(timestamp) {
+        // console.log(timestamp)
+        // svg.selectAll('path').remove()
         svg.append('path')
             .attr('stroke', 'black')
             .attr('stroke-width', '2')
             .attr('fill', 'none')
             .attr('d', pointsToSplinePath(points, true))
+        // window.requestAnimationFrame(frame)
     }
-    draw()
+    frame()
 
-    pebble = d3.create('path')
-        .attr('stroke', 'black')
-        .attr('stroke-width', '2')
-        .attr('fill', 'none')
-        .attr('d', pointsToSplinePath(points, true))
-
-    console.log(pebble.nodes()[0])
 
     document.addEventListener("click", (event) => {
         points.push([event.x, event.y])
-        draw()
     });
 
     var Engine = Matter.Engine,
@@ -47,9 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
         Svg = Matter.Svg,
         Bodies = Matter.Bodies;
 
-    // provide concave decomposition support library
-    // debugger
-    // Common.setDecomp(require('poly-decomp'));
 
     // create engine
     var engine = Engine.create(),
@@ -73,25 +80,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // add bodies
     if (typeof fetch !== 'undefined') {
-        var select = function (root, selector) {
-            return Array.prototype.slice.call(root.querySelectorAll(selector));
-        };
+        // var select = function (root, selector) {
+        //     return Array.prototype.slice.call(root.querySelectorAll(selector));
+        // };
 
-        var loadSvg = function (url) {
-            return fetch(url)
-                .then(function (response) { return response.text(); })
-                .then(function (raw) { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
-        };
+        // var loadSvg = function (url) {
+        //     return fetch(url)
+        //         .then(function (response) { return response.text(); })
+        //         .then(function (raw) { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
+        // };
 
 
         var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
 
-        // console.log(pebble.nodes()[0])
-        // console.log(svg.select('path').node())
+        // console.log('pebble.node()', pebble.node())
+        // console.log('svg.select(\'path\').node()', svg.select('path').node())
         var vertexSets = [svg.select('path').node()]
-        // var vertexSets = [pebble.nodes()[0]]
-            .map(function (path) { return Svg.pathToVertices(path, 10); });
- 
+            // var vertexSets = [pebble.node()]
+            console.log(vertexSets)
+                vertexSets = vertexSets.map(function (path) { return Svg.pathToVertices(path, 10); });
+
+        
         Composite.add(world, Bodies.fromVertices(100 + 1 * 150, 200 + 1 * 50, vertexSets, {
             render: {
                 fillStyle: color,
@@ -145,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Matter.Runner.stop(runner);
         }
     };
+
 
 });
 
