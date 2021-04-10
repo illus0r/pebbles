@@ -1,3 +1,5 @@
+"use strict"
+
 /*
 
 - самому рендерить на СВГ
@@ -23,32 +25,46 @@ import {pointsToSplinePath} from "./pointsToSplinePath.js"
 import {Pebble, Box} from "./pebble.js"
 
 
+// function Box(x, y, w, h) {
+//     this.w = w
+//     this.h = h
+
+//     this.body = Matter.Bodies.circle(x, y, w/2, h/2)
+//     // this.body = Bodies.fromVertices()
+//     Matter.World.add(world, this.body)
+
+//     // this.show = function(){
+//     //     var pos = this.body.position
+//     //   var angle = this.body.angle
+      
+//     //   push()
+//     //   translate(pos.x, pos.y)
+//     //   rotate(angle)
+//     //   rectMode(CENTER)
+//     //   // print(angle)
+//     //   ellipse(0,0,this.w,this.h)
+//     //   pop()
+      
+//     //   // this.body.
+//     // }
+//   }
+
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
     console.log('hey')
 
     const svg = d3.select('svg')
     const points = [[100, 100], [200, 200], [100, 200]]
 
-    function frame(timestamp) {
-        // console.log(timestamp)
-        // svg.selectAll('path').remove()
-        svg.append('path')
-            .attr('stroke', 'black')
-            .attr('stroke-width', '2')
-            .attr('fill', 'none')
-            .attr('d', pointsToSplinePath(points, true))
-        // window.requestAnimationFrame(frame)
-    }
-    frame()
-
-
-    document.addEventListener("click", (event) => {
-        points.push([event.x, event.y])
-    });
 
     var Engine = Matter.Engine,
         Render = Matter.Render,
-        Runner = Matter.Runner,
+        // Runner = Matter.Runner,
         Common = Matter.Common,
         MouseConstraint = Matter.MouseConstraint,
         Mouse = Matter.Mouse,
@@ -61,6 +77,29 @@ document.addEventListener("DOMContentLoaded", () => {
     // create engine
     var engine = Engine.create(),
         world = engine.world;
+
+    let tPrev 
+    function frame(timestamp) {
+        // console.log(timestamp)
+        // svg.selectAll('path').remove()
+        svg.append('path')
+            .attr('stroke', 'black')
+            .attr('stroke-width', '2')
+            .attr('fill', 'none')
+            .attr('d', pointsToSplinePath(points, true))
+        // box.draw(svg)
+        let t = Number(new Date())
+        Engine.update(engine, (t - tPrev) * .2)
+        tPrev = t
+    
+        window.requestAnimationFrame(frame)
+    }
+    frame()
+
+    document.addEventListener("click", (event) => {
+        points.push([event.x, event.y])
+    });
+
 
     // create renderer
     var render = Render.create({
@@ -75,8 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
     Render.run(render);
 
     // create runner
-    var runner = Runner.create();
-    Runner.run(runner, engine);
+    // var runner = Runner.create();
+    // Runner.run(runner, engine);
+    
 
     // add bodies
     if (typeof fetch !== 'undefined') {
@@ -90,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
         //         .then(function (raw) { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
         // };
 
-
         var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
 
         // console.log('pebble.node()', pebble.node())
@@ -100,14 +139,17 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(vertexSets)
                 vertexSets = vertexSets.map(function (path) { return Svg.pathToVertices(path, 10); });
 
-        
-        Composite.add(world, Bodies.fromVertices(100 + 1 * 150, 200 + 1 * 50, vertexSets, {
-            render: {
-                fillStyle: color,
-                strokeStyle: color,
-                lineWidth: 1
-            }
-        }, true));
+        let box = new Box({x: 100, y: 100, w: 50, h: 50, world});
+        Composite.add(world, box.body);
+        // box.draw(svg)
+
+        // Composite.add(world, Bodies.fromVertices(100 + 1 * 150, 200 + 1 * 50, vertexSets, {
+        //     render: {
+        //         fillStyle: color,
+        //         strokeStyle: color,
+        //         lineWidth: 1
+        //     }
+        // }, true));
 
     } else {
         Common.warn('Fetch is not available. Could not load SVG.');
@@ -143,17 +185,25 @@ document.addEventListener("DOMContentLoaded", () => {
         max: { x: 800, y: 600 }
     });
 
+
+
+
+
+
+
+
+
     // context for MatterTools.Demo
-    return {
-        engine: engine,
-        runner: runner,
-        render: render,
-        canvas: render.canvas,
-        stop: function () {
-            Matter.Render.stop(render);
-            Matter.Runner.stop(runner);
-        }
-    };
+    // return {
+    //     engine: engine,
+    //     runner: runner,
+    //     render: render,
+    //     canvas: render.canvas,
+    //     stop: function () {
+    //         Matter.Render.stop(render);
+    //         Matter.Runner.stop(runner);
+    //     }
+    // };
 
 
 });

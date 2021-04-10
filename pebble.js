@@ -1,14 +1,29 @@
+import * as Matter from "matter-js"
+
 export const Pebble = () => {
     console.log('ell')
 }
 
-export const Box = (x, y, w, h) => {
-    this.body = Bodies.circle(x, y, w/2, h/2)
-    // this.body = Bodies.fromVertices()
-    World.add(world, this.body)
-    this.w = w
-    this.h = h
-    
+export class Box {
+    constructor({x, y, w, h, world}) {
+        this.w = w
+        this.h = h
+
+        this.body = Matter.Bodies.circle(x, y, w/2, h/2)
+        // this.body = Bodies.fromVertices()
+        Matter.World.add(world, this.body)
+    }
+    draw(svg) {
+
+        var pos = this.body.position
+        var angle = this.body.angle
+
+        svg.append('circle')
+        .attr('cx', pos.x)
+        .attr('cy', pos.y)
+        .attr('r', 50)
+    }
+
     // this.show = function(){
     //     var pos = this.body.position
     //   var angle = this.body.angle
@@ -24,5 +39,3 @@ export const Box = (x, y, w, h) => {
     //   // this.body.
     // }
   }
-
-
