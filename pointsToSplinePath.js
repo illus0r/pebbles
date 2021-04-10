@@ -1,7 +1,7 @@
-const d3 = require('d3')
-const Spline = require('svg-catmull-rom-spline')
+import * as d3 from "d3"
+import * as Spline from "svg-catmull-rom-spline"
 
-export default function pointsToSplinePath(points, closed) {
+export function pointsToSplinePath(points, closed) {
     points = [...points];
 
     if(points.length < 2) return ''
