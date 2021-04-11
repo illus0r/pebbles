@@ -21,8 +21,7 @@ import "pathseg"
 import * as d3 from "d3"
 import * as Matter from "matter-js"
 
-import {pointsToSplinePath} from "./pointsToSplinePath.js"
-import {Pebble, Box} from "./pebble.js"
+import { Pebble, Box } from "./pebble.js"
 
 
 // function Box(x, y, w, h) {
@@ -36,7 +35,7 @@ import {Pebble, Box} from "./pebble.js"
 //     // this.show = function(){
 //     //     var pos = this.body.position
 //     //   var angle = this.body.angle
-      
+
 //     //   push()
 //     //   translate(pos.x, pos.y)
 //     //   rotate(angle)
@@ -44,7 +43,7 @@ import {Pebble, Box} from "./pebble.js"
 //     //   // print(angle)
 //     //   ellipse(0,0,this.w,this.h)
 //     //   pop()
-      
+
 //     //   // this.body.
 //     // }
 //   }
@@ -59,12 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('hey')
 
     const svg = d3.select('svg')
-    const points = [[100, 100], [200, 200], [100, 200]]
-
+    const points = [[10, 200], [-10, 200], [5, 100]]
 
     var Engine = Matter.Engine,
         Render = Matter.Render,
-        // Runner = Matter.Runner,
         Common = Matter.Common,
         MouseConstraint = Matter.MouseConstraint,
         Mouse = Matter.Mouse,
@@ -73,28 +70,26 @@ document.addEventListener("DOMContentLoaded", () => {
         Svg = Matter.Svg,
         Bodies = Matter.Bodies;
 
-
     // create engine
     var engine = Engine.create(),
         world = engine.world;
 
-    let tPrev 
-    function frame(timestamp) {
-        // console.log(timestamp)
-        // svg.selectAll('path').remove()
-        svg.append('path')
-            .attr('stroke', 'black')
-            .attr('stroke-width', '2')
-            .attr('fill', 'none')
-            .attr('d', pointsToSplinePath(points, true))
-        // box.draw(svg)
+    let tPrev
+    function frame(_timestamp) {
+        svg.selectAll('g').remove()
+        svg.selectAll('path').remove()
         let t = Number(new Date())
         Engine.update(engine, (t - tPrev) * .2)
         tPrev = t
-    
+        try {
+            box.draw(svg)
+        } catch (error) {
+            console.log('draw is not defined')
+        }
         window.requestAnimationFrame(frame)
     }
     frame()
+
 
     document.addEventListener("click", (event) => {
         points.push([event.x, event.y])
@@ -116,44 +111,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // create runner
     // var runner = Runner.create();
     // Runner.run(runner, engine);
-    
+
 
     // add bodies
-    if (typeof fetch !== 'undefined') {
-        // var select = function (root, selector) {
-        //     return Array.prototype.slice.call(root.querySelectorAll(selector));
-        // };
 
-        // var loadSvg = function (url) {
-        //     return fetch(url)
-        //         .then(function (response) { return response.text(); })
-        //         .then(function (raw) { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
-        // };
+    let box = new Box({ x: 100, y: 100, w: 50, h: 50, world, points, svg});
+    Composite.add(world, box.body);
+    // box.draw(svg)
 
-        var color = Common.choose(['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1']);
+    // Composite.add(world, Bodies.fromVertices(100 + 1 * 150, 200 + 1 * 50, vertexSets, {
+    //     render: {
+    //         fillStyle: color,
+    //         strokeStyle: color,
+    //         lineWidth: 1
+    //     }
+    // }, true));
 
-        // console.log('pebble.node()', pebble.node())
-        // console.log('svg.select(\'path\').node()', svg.select('path').node())
-        var vertexSets = [svg.select('path').node()]
-            // var vertexSets = [pebble.node()]
-            console.log(vertexSets)
-                vertexSets = vertexSets.map(function (path) { return Svg.pathToVertices(path, 10); });
 
-        let box = new Box({x: 100, y: 100, w: 50, h: 50, world});
-        Composite.add(world, box.body);
-        // box.draw(svg)
-
-        // Composite.add(world, Bodies.fromVertices(100 + 1 * 150, 200 + 1 * 50, vertexSets, {
-        //     render: {
-        //         fillStyle: color,
-        //         strokeStyle: color,
-        //         lineWidth: 1
-        //     }
-        // }, true));
-
-    } else {
-        Common.warn('Fetch is not available. Could not load SVG.');
-    }
 
     Composite.add(world, [
         Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
