@@ -2,7 +2,7 @@
 
 /*
 
-- самому рендерить на СВГ
+// - самому рендерить на СВГ
 - градиенты камушкам рандомные
 - гранолой раскидать
 - запаковка на хик
@@ -16,76 +16,48 @@
 
 */
 
-
 import "pathseg"
 import * as d3 from "d3"
 import * as Matter from "matter-js"
 
-import { Pebble, Box } from "./pebble.js"
-
-
-// function Box(x, y, w, h) {
-//     this.w = w
-//     this.h = h
-
-//     this.body = Matter.Bodies.circle(x, y, w/2, h/2)
-//     // this.body = Bodies.fromVertices()
-//     Matter.World.add(world, this.body)
-
-//     // this.show = function(){
-//     //     var pos = this.body.position
-//     //   var angle = this.body.angle
-
-//     //   push()
-//     //   translate(pos.x, pos.y)
-//     //   rotate(angle)
-//     //   rectMode(CENTER)
-//     //   // print(angle)
-//     //   ellipse(0,0,this.w,this.h)
-//     //   pop()
-
-//     //   // this.body.
-//     // }
-//   }
-
-
-
-
-
-
+import { Pebble } from "./pebble.js"
+import { AddGradientsToSvg } from "./addGradientsToSvg.js"
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log('hey')
 
     const svg = d3.select('svg')
-    const points = [[10, 200], [-10, 200], [5, 100]]
+    AddGradientsToSvg(svg)
+    let pebbles = []
 
     var Engine = Matter.Engine,
-        Render = Matter.Render,
-        Common = Matter.Common,
-        MouseConstraint = Matter.MouseConstraint,
-        Mouse = Matter.Mouse,
         Composite = Matter.Composite,
-        Vertices = Matter.Vertices,
-        Svg = Matter.Svg,
         Bodies = Matter.Bodies;
 
-    // create engine
-    var engine = Engine.create(),
-        world = engine.world;
+    let engine = Engine.create()
+    let world = engine.world
+    world.gravity.y = 0
+
 
     let tPrev
     function frame(_timestamp) {
         svg.selectAll('g').remove()
-        svg.selectAll('path').remove()
+        svg.selectAll('circle').remove()
         let t = Number(new Date())
+
+        // debugger
+        world.bodies.forEach(b => {
+            let centre = {x: 250, y: 250}
+            let pos = {x: b.position.x, y: b.position.y}
+            let force = .0000001
+            Matter.Body.applyForce(b, pos, {
+                x: - force * (pos.x - centre.x), 
+                y: - force * (pos.y - centre.y),
+            })
+        })
         Engine.update(engine, (t - tPrev) * .2)
+
         tPrev = t
-        try {
-            box.draw(svg)
-        } catch (error) {
-            console.log('draw is not defined')
-        }
+        pebbles.forEach(p => p.draw(svg))
         window.requestAnimationFrame(frame)
     }
     frame()
@@ -95,90 +67,26 @@ document.addEventListener("DOMContentLoaded", () => {
         points.push([event.x, event.y])
     });
 
-
-    // create renderer
-    var render = Render.create({
-        element: document.body,
-        engine: engine,
-        options: {
-            width: 800,
-            height: 600
+    for (let i = 0; i < 350; i++) {
+        // const points = new Array(3).fill(0).map(() => [500 * Math.random(), 500 * Math.random()])
+        let points = []
+        for (let j = 0; j < 3; j++) {
+            let angle = j * Math.PI * 2 / 3
+            let amp = (1 + 1 * Math.random()) * 150 / Math.sqrt(i+10)
+            let x = amp * Math.sin(angle)
+            let y = amp * Math.cos(angle)
+            points.push([x, y])
         }
-    });
-
-    Render.run(render);
-
-    // create runner
-    // var runner = Runner.create();
-    // Runner.run(runner, engine);
-
-
-    // add bodies
-
-    let box = new Box({ x: 100, y: 100, w: 50, h: 50, world, points, svg});
-    Composite.add(world, box.body);
-    // box.draw(svg)
-
-    // Composite.add(world, Bodies.fromVertices(100 + 1 * 150, 200 + 1 * 50, vertexSets, {
-    //     render: {
-    //         fillStyle: color,
-    //         strokeStyle: color,
-    //         lineWidth: 1
-    //     }
-    // }, true));
-
-
-
-    Composite.add(world, [
-        Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
-        Bodies.rectangle(400, 600, 800, 50, { isStatic: true }),
-        Bodies.rectangle(800, 300, 50, 600, { isStatic: true }),
-        Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
-    ]);
-
-    // add mouse control
-    var mouse = Mouse.create(render.canvas),
-        mouseConstraint = MouseConstraint.create(engine, {
-            mouse: mouse,
-            constraint: {
-                stiffness: 0.2,
-                render: {
-                    visible: false
-                }
-            }
-        });
-
-    Composite.add(world, mouseConstraint);
-
-    // keep the mouse in sync with rendering
-    render.mouse = mouse;
-
-    // fit the render viewport to the scene
-    Render.lookAt(render, {
-        min: { x: 0, y: 0 },
-        max: { x: 800, y: 600 }
-    });
-
-
-
-
-
-
-
-
-
-    // context for MatterTools.Demo
-    // return {
-    //     engine: engine,
-    //     runner: runner,
-    //     render: render,
-    //     canvas: render.canvas,
-    //     stop: function () {
-    //         Matter.Render.stop(render);
-    //         Matter.Runner.stop(runner);
-    //     }
-    // };
-
+        let pebble = new Pebble({ x: 50 + 412 * Math.random(), y: 50 + 412 * Math.random(), world, points })
+        Composite.add(world, pebble.body)
+        pebbles.push(pebble)
+    }
+    // Composite.add(world, [
+    //     Bodies.rectangle(256, -25, 512, 50, { isStatic: true }),
+    //     Bodies.rectangle(256+25, 512, 512, 50, { isStatic: true }),
+    //     Bodies.rectangle(512+25, 256, 50, 256, { isStatic: true }),
+    //     Bodies.rectangle(-25, 256, 50, 256, { isStatic: true })
+    // ]);
 
 });
 
