@@ -19,16 +19,15 @@ export function AddGradientsToSvg(svg) {
     // ]
 
     let colors = [
-        '#888',
+        '#FFF',
         '#666',
         '#444',
         '#222',
-        '#000',
     ]    
     for (let i = 0; i < 10; i++) {
         let colorIndex = Math.floor(Math.random()*colors.length)
         let col1 = colors[colorIndex]
-        let col2 = colors[(colorIndex+1) % colors.length]
+        let col2 = '#000'
 
         let grad = defs.append('radialGradient')
             .attr('id', `gradient${i}`)

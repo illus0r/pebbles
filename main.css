@@ -3,8 +3,8 @@ body, html {
     height: 100%;
 }
 svg {
-    height: 512px;
-    width: 512px;
-border: 1px solid silver;
-    background-color: #eee;
+    height: 100%;
+    width: 100%;
+    /* background-color: #eee; */
+    /* border: 1px solid silver; */
 }
