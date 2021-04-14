@@ -10,13 +10,21 @@ import * as d3 from "d3"
 
 export function AddGradientsToSvg(svg) {
     let defs = svg.append('defs')
+    // let colors = [
+    //     '#F8B195',
+    //     '#F67280',
+    //     '#C06C84',
+    //     '#6C5B7B',
+    //     '#355C7D',
+    // ]
+
     let colors = [
-        '#F8B195',
-        '#F67280',
-        '#C06C84',
-        '#6C5B7B',
-        '#355C7D',
-    ]
+        '#888',
+        '#666',
+        '#444',
+        '#222',
+        '#000',
+    ]    
     for (let i = 0; i < 10; i++) {
         let colorIndex = Math.floor(Math.random()*colors.length)
         let col1 = colors[colorIndex]

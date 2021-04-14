@@ -26,6 +26,8 @@ import { AddGradientsToSvg } from "./addGradientsToSvg.js"
 document.addEventListener("DOMContentLoaded", () => {
 
     const svg = d3.select('svg')
+    svg.attr('viewBox', "-512 -512 1024 1024")
+
     AddGradientsToSvg(svg)
     let pebbles = []
 
@@ -35,7 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let engine = Engine.create()
     let world = engine.world
-    world.gravity.y = 0
+    world.gravity.y = 0.0
+    // engine.enableSleeping = true
 
 
     let tPrev
@@ -44,17 +47,29 @@ document.addEventListener("DOMContentLoaded", () => {
         svg.selectAll('circle').remove()
         let t = Number(new Date())
 
+        Engine.update(engine, (t - tPrev) * .2)
         // debugger
         world.bodies.forEach(b => {
-            let centre = {x: 250, y: 250}
-            let pos = {x: b.position.x, y: b.position.y}
-            let force = .0000001
+            let centre = { x: 256, y: 256 }
+            let pos = { x: b.position.x, y: b.position.y }
+
+            let dist = (Math.hypot(pos.x, pos.y) + 50) / 512
+            dist = Math.min(dist, 1)
+            let angle = Math.atan2(pos.x, pos.y)
+            let radius = 512 * Math.floor(dist * 5) / 5
+            let target = {
+                x: radius * Math.sin(angle),
+                y: radius * Math.cos(angle)
+            }
+
+            let force = .00001 * b.mass
             Matter.Body.applyForce(b, pos, {
-                x: - force * (pos.x - centre.x), 
-                y: - force * (pos.y - centre.y),
+                x: - force * (pos.x - target.x), 
+                y: - force * (pos.y - target.y),
             })
+            // b.frictionAir = .05
+
         })
-        Engine.update(engine, (t - tPrev) * .2)
 
         tPrev = t
         pebbles.forEach(p => p.draw(svg))
@@ -63,21 +78,32 @@ document.addEventListener("DOMContentLoaded", () => {
     frame()
 
 
-    document.addEventListener("click", (event) => {
-        points.push([event.x, event.y])
-    });
+    // document.addEventListener("click", (event) => {
+    //     points.push([event.x, event.y])
+    // });
 
-    for (let i = 0; i < 350; i++) {
+    let getSize = (indexPercent) => {
+        // return 15
+        return 17 * Math.pow(indexPercent, 4) + 10
+    }
+
+    const numberOfPebbles = 100
+    for (let i = 0; i < numberOfPebbles; i++) {
         // const points = new Array(3).fill(0).map(() => [500 * Math.random(), 500 * Math.random()])
         let points = []
         for (let j = 0; j < 3; j++) {
             let angle = j * Math.PI * 2 / 3
-            let amp = (1 + 1 * Math.random()) * 150 / Math.sqrt(i+10)
+            let amp = (.5 + 1.5 * Math.random()) * getSize(i / numberOfPebbles)
             let x = amp * Math.sin(angle)
             let y = amp * Math.cos(angle)
             points.push([x, y])
         }
-        let pebble = new Pebble({ x: 50 + 412 * Math.random(), y: 50 + 412 * Math.random(), world, points })
+        let radius = Math.random() * 512
+        let angle = Math.random() * 2 * Math.PI
+        let pebble = new Pebble({
+            x:  radius * Math.sin(angle),
+            y: radius * Math.cos(angle), 
+            world, points })
         Composite.add(world, pebble.body)
         pebbles.push(pebble)
     }

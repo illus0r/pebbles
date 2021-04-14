@@ -6,4 +6,5 @@ svg {
     height: 512px;
     width: 512px;
 border: 1px solid silver;
+    background-color: #eee;
 }
